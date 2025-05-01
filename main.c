@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <termios.h>
 
 // Key Press States
 #define EV_KEY_RELEASED 0
@@ -33,6 +34,19 @@ bool ready_to_compute_byte = false;  // the state for whether to convert the bit
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
+struct termios orig_termios;    // Termios Struct
+
+void disable_echo() {
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &orig_termios); // get current settings
+    t = orig_termios;
+    t.c_lflag &= ~ECHO; // disable ECHO flag
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);   // apply settings
+}
+
+void restore_terminal() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios); // restore settings
+}
 
 /*
  * Generates the Byte based on the bits in the array
@@ -176,6 +190,7 @@ void process_key_presses(const struct input_event* current_event) {
 
 
 int main() {
+    printf("Starting StenoType...\n");
     // Struct to store the evdev device
     struct libevdev *keyboard_device = nullptr;
 
@@ -187,12 +202,8 @@ int main() {
         return 1;
     }
 
-    // Grab the device to prevent event propagation
-    if (ioctl(event_file_device, EVIOCGRAB, (void*)1) == -1) {
-        perror("Failed to grab device");
-        close(event_file_device);
-        return 1;
-    }
+    // Disables printing inputs to the terminal
+    disable_echo();
 
     // Initialises the evdev device (stored in libevdev struct named "keyboard_device")
     // Reports an error if evdev initialisation failed
@@ -203,7 +214,6 @@ int main() {
 
     // Prints evdev device name
     printf("Input device name: %s\n", libevdev_get_name(keyboard_device));
-    printf("Keyboard will locked to this program while it is running.");
     printf("Press ESC to exit\n");
 
 
@@ -225,7 +235,7 @@ int main() {
             continue;
         }
 
-        // print_event_summary(&current_event);
+        printf("Press ESC to exit\n");
 
         // If ESC Key is pushed, then exit app
         if (current_event.code == KEY_ESC) {
@@ -246,7 +256,7 @@ int main() {
 
     // Frees up resources before application ends
     libevdev_free(keyboard_device);
-    ioctl(event_file_device, EVIOCGRAB, (void*)0); // Release grab when done
+    restore_terminal(); // Restores printing inputs to the terminal
     close(event_file_device);
     return 0;
 }
