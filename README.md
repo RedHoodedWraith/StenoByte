@@ -1,5 +1,5 @@
 # StenoByte Prototype
-A stenotype inspired keyboard app for typing out bytes.
+A stenotype inspired terminal app for typing out bytes quickly.
 
 This program is designed to allow you to build up a byte using eight keys from your keyboard, with each key 
 corresponding to a bit in a byte (which is made up of eight bits). When you press & hold down those keys, their 
