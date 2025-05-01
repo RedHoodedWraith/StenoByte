@@ -31,6 +31,20 @@
 bool bit_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
 
+u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
+
+
+/*
+ * Generates the Byte based on the bits in the array
+ */
+void compute_byte() {
+    current_byte = 0x00;
+    for (int i = 0; i < 8; i++) {
+        current_byte = current_byte ^ bit_arr[i] << i;
+    }
+    ready_to_compute_byte = false;
+}
+
 /*
  * Prints the event summary of a key press *
  */
@@ -53,7 +67,7 @@ void print_event_summary(const struct input_event* current_event) {
  * Prints the current state of the Bit Array
  */
 void print_bit_arr_summary() {
-    printf("Bits in Array: ");
+    printf("\nBits in Array: ");
     for (int i = 7; i >= 0; i--) {
         printf("b[%d]: %d", i, bit_arr[i]);
         if (i > 0) {
@@ -61,6 +75,10 @@ void print_bit_arr_summary() {
         }
     }
     printf("\n");
+}
+
+void print_byte_summary() {
+    printf("Last Computed Byte as decimal: %d\n", current_byte);
 }
 
 /*
@@ -92,8 +110,11 @@ void update_bit_arr(const int key_code, const bool new_state) {
             return;
         case KEY_SEMICOLON:
             bit_arr[0] = new_state;
+            return;
         case KEY_SPACE:
-            ready_to_compute_byte = new_state;
+            // sets ready_to_compute_byte to true if new_state is true, else leaves it as it is
+            // ready_to_compute_byte should to be set to false after it computing the byte
+            ready_to_compute_byte = new_state ? true : ready_to_compute_byte;
         default: ;
     }
 }
@@ -166,6 +187,13 @@ int main() {
         return 1;
     }
 
+    // Grab the device to prevent event propagation
+    if (ioctl(event_file_device, EVIOCGRAB, (void*)1) == -1) {
+        perror("Failed to grab device");
+        close(event_file_device);
+        return 1;
+    }
+
     // Initialises the evdev device (stored in libevdev struct named "keyboard_device")
     // Reports an error if evdev initialisation failed
     if (libevdev_new_from_fd(event_file_device, &keyboard_device) < 0) {
@@ -175,6 +203,7 @@ int main() {
 
     // Prints evdev device name
     printf("Input device name: %s\n", libevdev_get_name(keyboard_device));
+    printf("Keyboard will locked to this program while it is running.");
     printf("Press ESC to exit\n");
 
 
@@ -207,11 +236,17 @@ int main() {
         process_key_presses(&current_event);
         print_bit_arr_summary();
 
+        if (ready_to_compute_byte) {
+            compute_byte();
+        }
+        print_byte_summary();
+
         usleep(1000); // Small delay
     }
 
     // Frees up resources before application ends
     libevdev_free(keyboard_device);
+    ioctl(event_file_device, EVIOCGRAB, (void*)0); // Release grab when done
     close(event_file_device);
     return 0;
 }
