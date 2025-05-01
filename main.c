@@ -4,6 +4,21 @@
 #include <stdio.h>
 #include <unistd.h>
 
+/*
+ * Prints the event summary of a key press *
+ */
+void print_event_summary(const struct input_event* current_event) {
+    if (current_event == NULL) {
+        return;
+    }
+
+    printf("\nKey %s (%d): code %d\n\n",
+           current_event->value ? (current_event->value == 1 ? "PRESSED" : "REPEATED") : "RELEASED",
+           current_event->value,
+           current_event->code);
+}
+
+
 int main() {
     // Struct to store the evdev device
     struct libevdev *keyboard_device = nullptr;
@@ -16,7 +31,7 @@ int main() {
         return 1;
     }
 
-    // Initialises the evdev device (stored in libevdev struct named "keyboard_device"))
+    // Initialises the evdev device (stored in libevdev struct named "keyboard_device")
     // Reports an error if evdev initialisation failed
     if (libevdev_new_from_fd(event_file_device, &keyboard_device) < 0) {
         perror("Failed to init libevdev");
@@ -44,11 +59,8 @@ int main() {
             continue;
         }
 
-        // Prints the Key Event Summary
-        printf("\nKey %s (%d): code %d\n\n",
-               current_event.value ? (current_event.value == 1 ? "PRESSED" : "REPEATED") : "RELEASED",
-               current_event.value,
-               current_event.code);
+        // Print Key Event Summary
+        print_event_summary(&current_event);
 
         // If ESC Key is pushed, then exit app
         if (current_event.code == KEY_ESC) {
