@@ -1,4 +1,5 @@
 # StenoByte Prototype
+A stenotype keyboard for typing out bytes. Uses certain keys from your existing ASCII keyboard layout.
 
 # Key Codes
 * a - 97
