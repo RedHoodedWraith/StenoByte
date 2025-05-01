@@ -10,7 +10,7 @@ int main() {
 
     // Opens the keyboard event file (usually event3) in Read Only and Non-Blocking Modes
     // Reports an error if something went wrong
-    int fd = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to correct device
+    const int fd = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to correct device
     if (fd < 0) {
         perror("Failed to open device");
         return 1;
@@ -31,25 +31,33 @@ int main() {
     struct input_event ev;  // The current event
     while (1) {
         const int rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);  // Gets the next event
-        if (rc == LIBEVDEV_READ_STATUS_SUCCESS) {
-            if (ev.type == EV_KEY) {
 
-                // Prints the Key Event Summary
-                printf("Key %s (%d): code %d\n",
-                       ev.value ? (ev.value == 1 ? "PRESSED" : "REPEATED") : "RELEASED",
-                       ev.value,
-                       ev.code);
-
-                // If ESC Key is pushed, then exit app
-                if (ev.code == KEY_ESC) {
-                    printf("ESC pressed\nExiting...\n");
-                    break;
-                }
-            }
+        // Ignores Non-Success Read Events
+        if (rc != LIBEVDEV_READ_STATUS_SUCCESS) {
+            continue;
         }
+
+        // Ensures a Key Event Type Occurred, ignores otherwise
+        if (ev.type != EV_KEY) {
+            continue;
+        }
+
+        // Prints the Key Event Summary
+        printf("\nKey %s (%d): code %d\n\n",
+               ev.value ? (ev.value == 1 ? "PRESSED" : "REPEATED") : "RELEASED",
+               ev.value,
+               ev.code);
+
+        // If ESC Key is pushed, then exit app
+        if (ev.code == KEY_ESC) {
+            printf("ESC pressed\nExiting...\n");
+            break;
+        }
+
         usleep(1000); // Small delay
     }
 
+    // Frees up resources before application ends
     libevdev_free(dev);
     close(fd);
     return 0;
