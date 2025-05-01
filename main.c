@@ -21,15 +21,53 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <termios.h>
 
 // Key Press States
 #define EV_KEY_RELEASED 0
 #define EV_KEY_PRESSED 1
 #define EV_KEY_REPEATED 2
 
+// Number of Bits in the Bit Array (should be 8)
+# define BITS_ARR_SIZE 8
+
 // Bit Array that contains the bits that forms a byte
-bool bit_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
+bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
+char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
+
+u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
+
+struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
+
+/*
+ * Disables echoing/printing key presses in terminal
+ */
+void disable_echo() {
+    struct termios temporary_terminal_settings;
+    tcgetattr(STDIN_FILENO, &original_terminal_settings); // Get current terminal settings
+    temporary_terminal_settings = original_terminal_settings;   // Copy original settings to temporary settings
+    temporary_terminal_settings.c_lflag &= ~ECHO; // Disable ECHO flag
+    tcsetattr(STDIN_FILENO, TCSANOW, &temporary_terminal_settings);   // Apply temporary settings
+}
+
+/*
+ * Restores original terminal settings prior to this program running
+ */
+void restore_terminal() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_settings); // restore settings
+}
+
+/*
+ * Generates the Byte based on the bits in the array
+ */
+void compute_byte() {
+    current_byte = 0x00;    // Resets the Byte to zero
+    for (int i = 0; i < BITS_ARR_SIZE; i++) {
+        current_byte = current_byte ^ bit_arr[i] << i;
+    }
+    ready_to_compute_byte = false;
+}
 
 /*
  * Prints the event summary of a key press *
@@ -49,18 +87,49 @@ void print_event_summary(const struct input_event* current_event) {
            current_event->code);    // Prints the ID for the key that is affected
 }
 
+void print_byte_summary() {
+    printf("Last Computed Byte as decimal: %d\n", current_byte);
+}
+
 /*
  * Prints the current state of the Bit Array
  */
 void print_bit_arr_summary() {
-    printf("Bits in Array: ");
+    printf("\nBits in Array:\n");
+    printf("\tBit Value:\t| ");
     for (int i = 7; i >= 0; i--) {
-        printf("b[%d]: %d", i, bit_arr[i]);
+        printf("    %d   ", bit_arr[i]);
         if (i > 0) {
-            printf(", ");
+            printf(" | ");
         }
     }
     printf("\n");
+
+    for (int i=0; i<24+11*BITS_ARR_SIZE; i++) {
+        printf("-");
+    }
+    printf("\n");
+
+    printf("\tBit Index:\t| ");
+    for (int i = 7; i >= 0; i--) {
+        printf("  [b%d]  ", i);
+        if (i > 0) {
+            printf(" | ");
+        }
+    }
+    printf("\n\tKey:\t\t| ");
+
+    for (int i = 7; i >= 0; i--) {
+        printf("  [%c]   ", keys_arr[i]);
+        if (i > 0) {
+            printf(" | ");
+        }
+    }
+    printf("\n");
+    print_byte_summary();
+    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");
+    printf("\nBits will be 0 if keys are not pressed.");
+    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");
 }
 
 /*
@@ -92,8 +161,11 @@ void update_bit_arr(const int key_code, const bool new_state) {
             return;
         case KEY_SEMICOLON:
             bit_arr[0] = new_state;
+            return;
         case KEY_SPACE:
-            ready_to_compute_byte = new_state;
+            // sets ready_to_compute_byte to true if new_state is true, else leaves it as it is
+            // ready_to_compute_byte should to be set to false after it computing the byte
+            ready_to_compute_byte = new_state ? true : ready_to_compute_byte;
         default: ;
     }
 }
@@ -155,6 +227,7 @@ void process_key_presses(const struct input_event* current_event) {
 
 
 int main() {
+    printf("Starting StenoType...\n");
     // Struct to store the evdev device
     struct libevdev *keyboard_device = nullptr;
 
@@ -165,6 +238,9 @@ int main() {
         perror("Failed to open device");
         return 1;
     }
+
+    // Disables printing inputs to the terminal
+    disable_echo();
 
     // Initialises the evdev device (stored in libevdev struct named "keyboard_device")
     // Reports an error if evdev initialisation failed
@@ -179,6 +255,8 @@ int main() {
 
 
     struct input_event current_event;  // The current event struct
+
+    print_bit_arr_summary();    // Initial Print Summary
 
     // Infinitely loops by default
     while (1) {
@@ -196,8 +274,6 @@ int main() {
             continue;
         }
 
-        // print_event_summary(&current_event);
-
         // If ESC Key is pushed, then exit app
         if (current_event.code == KEY_ESC) {
             printf("ESC pressed\nExiting...\n");
@@ -207,11 +283,16 @@ int main() {
         process_key_presses(&current_event);
         print_bit_arr_summary();
 
+        if (ready_to_compute_byte) {
+            compute_byte();
+        }
+
         usleep(1000); // Small delay
     }
 
     // Frees up resources before application ends
     libevdev_free(keyboard_device);
+    restore_terminal(); // Restores printing inputs to the terminal
     close(event_file_device);
     return 0;
 }
