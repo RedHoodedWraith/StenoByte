@@ -1,6 +1,6 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
+name: CMake on Multiple Platforms
 
 on:
   push:
@@ -23,8 +23,9 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
+        # TODO: Add support for Windows and Mac.
         # os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, ]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
@@ -79,3 +80,10 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+    - name: Upload Generated Package File
+      uses: actions/upload-artifact@v4
+      with:
+         name: stenotype-build
+         path: "${{ steps.strings.outputs.build-output-dir }}"
+         if-no-files-found: error
