@@ -46,8 +46,8 @@ void print_bit_arr_summary() {
 }
 
 /*
- * Updates the current bits in the array and the array is ready to be computed into a byte (which is when the space
- * bar is pressed)
+ * Updates the current bits in the array and whether the array is ready to be computed into a byte (which is when
+ * the space bar is pressed)
  */
 void update_bit_arr(const int key_code, const bool new_state) {
     switch (key_code) {
