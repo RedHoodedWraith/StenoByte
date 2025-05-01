@@ -34,6 +34,7 @@
 // Bit Array that contains the bits that forms a byte
 bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
 char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
+u_int8_t subvalues_arr[BITS_ARR_SIZE];
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
@@ -70,6 +71,16 @@ void compute_byte() {
 }
 
 /*
+ * Sets up the sub-values array for labelling
+ */
+void setup_subvalues_array() {
+    for (int i = BITS_ARR_SIZE; i >= 0; i--) {
+        u_int8_t val = 0;
+        subvalues_arr[i] = val ^ 1 << i;
+    }
+}
+
+/*
  * Prints the event summary of a key press *
  */
 void print_event_summary(const struct input_event* current_event) {
@@ -98,32 +109,27 @@ void print_bit_arr_summary() {
     printf("\nBits in Array:\n");
     printf("\tBit Value:\t| ");
     for (int i = 7; i >= 0; i--) {
-        printf("    %d   ", bit_arr[i]);
-        if (i > 0) {
-            printf(" | ");
-        }
+        printf("\t%d\t|", bit_arr[i]);
     }
     printf("\n");
 
-    for (int i=0; i<24+11*BITS_ARR_SIZE; i++) {
+    for (int i=0; i<24+16*BITS_ARR_SIZE; i++) {
         printf("-");
     }
-    printf("\n");
 
-    printf("\tBit Index:\t| ");
+    printf("\n\tSub-Value:\t|");
     for (int i = 7; i >= 0; i--) {
-        printf("  [b%d]  ", i);
-        if (i > 0) {
-            printf(" | ");
-        }
+        printf("\t[%d]\t|", subvalues_arr[i]);
     }
-    printf("\n\tKey:\t\t| ");
+
+    printf("\n\tBit Index:\t|");
+    for (int i = 7; i >= 0; i--) {
+        printf("\t[b%d]\t|", i);
+    }
+    printf("\n\tKey:\t\t|");
 
     for (int i = 7; i >= 0; i--) {
-        printf("  [%c]   ", keys_arr[i]);
-        if (i > 0) {
-            printf(" | ");
-        }
+        printf("\t[%c]\t|", keys_arr[i]);
     }
     printf("\n");
     print_byte_summary();
@@ -230,6 +236,8 @@ int main() {
     printf("Starting StenoType...\n");
     // Struct to store the evdev device
     struct libevdev *keyboard_device = nullptr;
+
+    setup_subvalues_array();
 
     // Opens the keyboard event file (usually event3) in Read Only and Non-Blocking Modes
     // Reports an error if something went wrong
