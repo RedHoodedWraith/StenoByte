@@ -104,6 +104,7 @@ void print_byte_summary() {
 
 /*
  * Prints the current state of the Bit Array
+ * TODO: The repeated for loops could probably be simplified into a dedicated method
  */
 void print_bit_arr_summary() {
     printf("\nBits in Array:\n");
