@@ -1,6 +1,14 @@
 # StenoByte Prototype
-A stenotype inspired keyboard app for typing out bytes. Uses certain keys from your existing QWERTY keyboard layout.
-This is currently designed to work in Linux. 
+A stenotype inspired keyboard app for typing out bytes.
+
+This program is designed to allow you to build up a byte using eight keys from your keyboard, with each key 
+corresponding to a bit in a byte (which is made up of eight bits). When you press & hold down those keys, their 
+associated bits are set to 1. When the keys are released or are not being pushed, their associated bits are set to 0.
+
+When you are ready to turn those bits into a byte, press the Space Bar and the application will convert those bits into
+a byte and display it as a decimal.
+
+This application is currently designed to work in Linux. 
 
 For the time-being, this app requires elevated privileges (e.g. `sudo`) to run.
 
