@@ -34,25 +34,31 @@ bool ready_to_compute_byte = false;  // the state for whether to convert the bit
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
-struct termios orig_termios;    // Termios Struct
+struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
 
+/*
+ * Disables echoing/printing key presses in terminal
+ */
 void disable_echo() {
-    struct termios t;
-    tcgetattr(STDIN_FILENO, &orig_termios); // get current settings
-    t = orig_termios;
-    t.c_lflag &= ~ECHO; // disable ECHO flag
-    tcsetattr(STDIN_FILENO, TCSANOW, &t);   // apply settings
+    struct termios temporary_terminal_settings;
+    tcgetattr(STDIN_FILENO, &original_terminal_settings); // Get current terminal settings
+    temporary_terminal_settings = original_terminal_settings;   // Copy original settings to temporary settings
+    temporary_terminal_settings.c_lflag &= ~ECHO; // Disable ECHO flag
+    tcsetattr(STDIN_FILENO, TCSANOW, &temporary_terminal_settings);   // Apply temporary settings
 }
 
+/*
+ * Restores original terminal settings prior to this program running
+ */
 void restore_terminal() {
-    tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios); // restore settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_settings); // restore settings
 }
 
 /*
  * Generates the Byte based on the bits in the array
  */
 void compute_byte() {
-    current_byte = 0x00;
+    current_byte = 0x00;    // Resets the Byte to zero
     for (int i = 0; i < 8; i++) {
         current_byte = current_byte ^ bit_arr[i] << i;
     }
