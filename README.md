@@ -1,5 +1,5 @@
 # StenoByte Prototype
-A stenotype keyboard for typing out bytes. Uses certain keys from your existing QWERTY keyboard layout.
+A stenotype inspired keyboard app for typing out bytes. Uses certain keys from your existing QWERTY keyboard layout.
 This is currently designed to work in Linux.
 
 # Codes
