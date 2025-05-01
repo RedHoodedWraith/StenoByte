@@ -28,8 +28,12 @@
 #define EV_KEY_PRESSED 1
 #define EV_KEY_REPEATED 2
 
+// Number of Bits in the Bit Array (should be 8)
+# define BITS_ARR_SIZE 8
+
 // Bit Array that contains the bits that forms a byte
-bool bit_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
+bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
+char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
@@ -59,7 +63,7 @@ void restore_terminal() {
  */
 void compute_byte() {
     current_byte = 0x00;    // Resets the Byte to zero
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < BITS_ARR_SIZE; i++) {
         current_byte = current_byte ^ bit_arr[i] << i;
     }
     ready_to_compute_byte = false;
@@ -83,22 +87,49 @@ void print_event_summary(const struct input_event* current_event) {
            current_event->code);    // Prints the ID for the key that is affected
 }
 
+void print_byte_summary() {
+    printf("Last Computed Byte as decimal: %d\n", current_byte);
+}
+
 /*
  * Prints the current state of the Bit Array
  */
 void print_bit_arr_summary() {
-    printf("\nBits in Array: ");
+    printf("\nBits in Array:\n");
+    printf("\tBit Value:\t| ");
     for (int i = 7; i >= 0; i--) {
-        printf("b[%d]: %d", i, bit_arr[i]);
+        printf("    %d   ", bit_arr[i]);
         if (i > 0) {
-            printf(", ");
+            printf(" | ");
         }
     }
     printf("\n");
-}
 
-void print_byte_summary() {
-    printf("Last Computed Byte as decimal: %d\n", current_byte);
+    for (int i=0; i<24+11*BITS_ARR_SIZE; i++) {
+        printf("-");
+    }
+    printf("\n");
+
+    printf("\tBit Index:\t| ");
+    for (int i = 7; i >= 0; i--) {
+        printf("  [b%d]  ", i);
+        if (i > 0) {
+            printf(" | ");
+        }
+    }
+    printf("\n\tKey:\t\t| ");
+
+    for (int i = 7; i >= 0; i--) {
+        printf("  [%c]   ", keys_arr[i]);
+        if (i > 0) {
+            printf(" | ");
+        }
+    }
+    printf("\n");
+    print_byte_summary();
+    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");
+    printf("\nBits will be 0 if keys are not pressed.");
+    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");
 }
 
 /*
@@ -225,6 +256,8 @@ int main() {
 
     struct input_event current_event;  // The current event struct
 
+    print_bit_arr_summary();    // Initial Print Summary
+
     // Infinitely loops by default
     while (1) {
         // Gets the next event
@@ -241,8 +274,6 @@ int main() {
             continue;
         }
 
-        printf("Press ESC to exit\n");
-
         // If ESC Key is pushed, then exit app
         if (current_event.code == KEY_ESC) {
             printf("ESC pressed\nExiting...\n");
@@ -255,7 +286,6 @@ int main() {
         if (ready_to_compute_byte) {
             compute_byte();
         }
-        print_byte_summary();
 
         usleep(1000); // Small delay
     }
