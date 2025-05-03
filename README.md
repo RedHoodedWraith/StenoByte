@@ -80,6 +80,5 @@ maintaining this repository.
 ## License
 Copyright (C) 2025  Asami De Almeida
 
-Released under the GPL 3 License. See the following pages for more information:
-* [License Summary](LICENSE_SUMMARY.md)
-* [Full GPL 3 License](LICENSE)
+Released under the MIT License. See the following pages for more information:
+* [MIT License](LICENSE)
