@@ -213,8 +213,10 @@ void print_event_summary(const struct input_event* current_event) {
            current_event->code);    // Prints the ID for the key that is affected
 }
 
+/*
+ * Prints the Byte Summary
+ */
 void print_byte_summary() {
-    // printf("Last Computed Byte as decimal: %d\n", current_byte);
     char msg[35];
     get_byte_summary(msg);
     printf("%s", msg);
@@ -222,10 +224,10 @@ void print_byte_summary() {
 
 /*
  * Gets Byte Summary as a String (an array of chars)
- * Prints between 33 and 35 chars but assumes current_byte will not be a value that exceeds 255.
+ * Assumes msg has a minimum length of 35. Assumes value of current_byte will not exceed 255.
  */
 void get_byte_summary(char* msg) {
-    sprintf(msg, "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
+    sprintf(msg + strlen(msg), "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
 }
 
 /*
@@ -233,36 +235,40 @@ void get_byte_summary(char* msg) {
  * TODO: The repeated for loops could probably be simplified into a dedicated method
  */
 void print_bit_arr_summary() {
-    printf("\nBits in Array:\n");   // Prints 16 chars
-    printf("\tBit Value:\t| "); // Prints 14 chars
+    char msg[654] = "";
+
+    sprintf(msg + strlen(msg), "\nBits in Array:\n");   // Prints 16 chars
+    sprintf(msg + strlen(msg), "\tBit Value:\t| "); // Prints 14 chars
     for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        printf("\t%d\t|", bit_arr[i]);  // Prints between 4 and 6 chars
+        sprintf(msg + strlen(msg), "\t%d\t|", bit_arr[i]);  // Prints between 4 and 6 chars
     }
-    printf("\n");   // Prints 1 char
+    sprintf(msg + strlen(msg), "\n");   // Prints 1 char
 
     for (int i=0; i<24+16*BITS_ARR_SIZE; i++) { // Repeats 24+(16*8) times, which is 152
-        printf("-");    // Prints 1 char
+        sprintf(msg + strlen(msg), "-");    // Prints 1 char
     }
 
-    printf("\n\tSub-Value:\t|");    // Prints 14 chars
+    sprintf(msg + strlen(msg), "\n\tSub-Value:\t|");    // Prints 14 chars
     for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        printf("\t[%d]\t|", subvalues_arr[i]);  // Prints between 6 and 8 chars
+        sprintf(msg + strlen(msg), "\t[%d]\t|", subvalues_arr[i]);  // Prints between 6 and 8 chars
     }
 
-    printf("\n\tBit Index:\t|");    // Prints 14 chars
+    sprintf(msg + strlen(msg), "\n\tBit Index:\t|");    // Prints 14 chars
     for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        printf("\t[b%d]\t|", i);    // Prints 7 times
+        sprintf(msg + strlen(msg), "\t[b%d]\t|", i);    // Prints 7 chars
     }
-    printf("\n\tKey:\t\t|");    // Prints 9 times
+    sprintf(msg + strlen(msg), "\n\tKey:\t\t|");    // Prints 9 times
 
     for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        printf("\t[%c]\t|", keys_arr[i]);   // Prints 6 char
+        sprintf(msg + strlen(msg), "\t[%c]\t|", keys_arr[i]);   // Prints 6 chars
     }
-    printf("\n");   // Prints 1 char
-    print_byte_summary();   // Prints between 33 and 35 chars
-    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");    // Prints 88 chars
-    printf("\nBits will be 0 if keys are not pressed.");    // Prints 40 chars
-    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");  // Prints 53 chars
+    sprintf(msg + strlen(msg), "\n");   // Prints 1 char
+    get_byte_summary(msg);   // Prints between 33 and 35 chars
+    sprintf(msg + strlen(msg), "\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");    // Prints 88 chars
+    sprintf(msg + strlen(msg), "\nBits will be 0 if keys are not pressed.");    // Prints 40 chars
+    sprintf(msg + strlen(msg), "\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");  // Prints 53 chars
+
+    printf("%s", msg);
 }
 
 /*
@@ -274,7 +280,7 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Exits method if event type is not related to a key event
+    // Exits method if the event_type variable is not related to a key event
     if (current_event->type != EV_KEY) {
         return;
     }
