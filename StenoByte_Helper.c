@@ -215,17 +215,17 @@ void print_event_summary(const struct input_event* current_event) {
 
 void print_byte_summary() {
     // printf("Last Computed Byte as decimal: %d\n", current_byte);
-    printf("%s", get_byte_summary());
+    char msg[35];
+    get_byte_summary(msg);
+    printf("%s", msg);
 }
 
 /*
  * Gets Byte Summary as a String (an array of chars)
  * Prints between 33 and 35 chars but assumes current_byte will not be a value that exceeds 255.
  */
-const char* get_byte_summary() {
-    char* msg[35];
-    sprintf(*msg, "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
-    return *msg;
+void get_byte_summary(char* msg) {
+    sprintf(msg, "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
 }
 
 /*
