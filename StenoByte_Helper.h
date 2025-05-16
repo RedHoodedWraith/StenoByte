@@ -58,6 +58,8 @@ void run_stenobyte();
 
 void end_stenobyte();
 
+void process_key_presses(const struct input_event* current_event);
+
 bool is_valid_key(int key_code);
 
 void update_bit_arr(int key_code, bool new_state);
@@ -73,8 +75,6 @@ void print_event_summary(const struct input_event* current_event);
 void print_byte_summary();
 
 void print_bit_arr_summary();
-
-void process_key_presses(const struct input_event* current_event);
 
 void disable_echo();
 
