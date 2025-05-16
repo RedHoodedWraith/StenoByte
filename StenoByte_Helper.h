@@ -35,9 +35,9 @@
 // Number of Bits in the Bit Array (should be 8)
 # define BITS_ARR_SIZE 8
 
-extern struct libevdev keyboard_device; // Struct to store the evdev device
+extern struct libevdev *keyboard_device; // Struct to store the evdev device
 extern struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
-int *event_file_device = nullptr;
+extern const int event_file_device;
 
 // Arrays & Variables
 // Bit Array that contains the bits that forms a byte
