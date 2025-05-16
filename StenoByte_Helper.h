@@ -35,7 +35,9 @@
 // Number of Bits in the Bit Array (should be 8)
 # define BITS_ARR_SIZE 8
 
+extern struct libevdev keyboard_device; // Struct to store the evdev device
 extern struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
+int *event_file_device = nullptr;
 
 // Arrays & Variables
 // Bit Array that contains the bits that forms a byte
@@ -49,7 +51,7 @@ extern u_int8_t current_byte;  // The byte last computed from the bit array
 
 // Methods & Functions
 
-void setup_stenobyte();
+int setup_stenobyte();
 
 void run_stenobyte();
 
