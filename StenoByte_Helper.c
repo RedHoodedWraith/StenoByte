@@ -42,7 +42,7 @@ int setup_stenobyte() {
 
     setup_subvalues_array();
 
-    int event_file_device = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to the correct device
+    const int event_file_device = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to the correct device
 
     // Opens the keyboard event file (usually event3) in Read-Only and Non-Blocking Modes
     // Reports an error if something went wrong
@@ -92,7 +92,7 @@ void run_stenobyte() {
             continue;
         }
 
-        // If ESC Key is pushed, then exit app
+        // If the ESC Key is pushed, then exit the app
         if (current_event.code == KEY_ESC) {
             printf("ESC pressed\nExiting...\n");
             break;
@@ -190,7 +190,7 @@ void compute_byte() {
  */
 void setup_subvalues_array() {
     for (int i = BITS_ARR_SIZE; i >= 0; i--) {
-        u_int8_t val = 0;
+        constexpr u_int8_t val = 0;
         subvalues_arr[i] = val ^ 1 << i;
     }
 }
@@ -264,9 +264,11 @@ void print_bit_arr_summary() {
     }
     sprintf(msg + strlen(msg), "\n");   // Prints 1 char
     get_byte_summary(msg);   // Prints between 33 and 35 chars
-    sprintf(msg + strlen(msg), "\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");    // Prints 88 chars
+    sprintf(msg + strlen(msg), "\nPress & Hold the keys corresponding to the bits in the"
+                               " byte you would like to set to 1.");    // Prints 88 chars
     sprintf(msg + strlen(msg), "\nBits will be 0 if keys are not pressed.");    // Prints 40 chars
-    sprintf(msg + strlen(msg), "\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");  // Prints 53 chars
+    sprintf(msg + strlen(msg), "\nPress SPACE BAR to compute Byte\t\t|\t"
+                               "Press ESC to exit\n");  // Prints 53 chars
 
     printf("%s", msg);
 }
@@ -290,8 +292,8 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Sets the bit value in array to zero if the associated key is released
-    // Then exits method
+    // Sets the bit value in the array to zero if the associated key is released
+    // Then exits the method
     if (current_event->value == EV_KEY_RELEASED) {
         update_bit_arr(current_event->code, false);
         return;
@@ -318,7 +320,7 @@ void disable_echo() {
 }
 
 /*
- * Restores original terminal settings prior to this program running
+ * Restores original terminal settings before this program running
  */
 void restore_terminal() {
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_settings); // restore settings

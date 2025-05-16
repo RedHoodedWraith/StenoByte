@@ -20,13 +20,16 @@
 
 
 int main() {
+    // Performs setup; exits app if there was an error while setting up
     const int setup_result = setup_stenobyte();
     if (setup_result != 0) {
         return setup_result;
     }
 
+    // Runs the loop
     run_stenobyte();
 
+    // Frees up Memory Safely
     end_stenobyte();
     return 0;
 }
