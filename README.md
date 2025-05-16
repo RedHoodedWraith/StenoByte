@@ -80,5 +80,5 @@ maintaining this repository.
 ## License
 Copyright (C) 2025  Asami De Almeida
 
-Released under the MIT License. See the following pages for more information:
-* [MIT License](LICENSE)
+Released under the Apache License 2.0 License. See the following pages for more information:
+* [Apache License 2.0](LICENSE)
