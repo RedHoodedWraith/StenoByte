@@ -222,8 +222,10 @@ void restore_terminal() {
 
 /*
  * Sets up the application and configures the devices to read from
+ *
+ * Returns 0 if there were no errors, 1 if there were errors
  */
-void setup_stenobyte() {
+int setup_stenobyte() {
     printf("Starting StenoType...\n");
 
     setup_subvalues_array();
@@ -252,6 +254,7 @@ void setup_stenobyte() {
     // Prints evdev device name
     printf("Input device name: %s\n", libevdev_get_name(keyboard_device));
     printf("Press ESC to exit\n");
+    return 0;
 }
 
 /*

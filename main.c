@@ -20,7 +20,10 @@
 
 
 int main() {
-    setup_stenobyte();
+    int setup_result = setup_stenobyte();
+    if (setup_result != 0) {
+        return setup_result;
+    }
 
     run_stenobyte();
 
