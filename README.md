@@ -2,13 +2,13 @@
 A stenotype inspired terminal app for typing out bytes quickly.
 
 This program is designed to allow you to build up a byte using eight keys from your keyboard, with each key 
-corresponding to a bit in a byte (which is made up of eight bits). When you press & hold down those keys, their 
+corresponding to a bit in a byte (which is made up of eight bits). When you press and hold down those keys, their 
 associated bits are set to 1. When the keys are released or are not being pushed, their associated bits are set to 0.
 
-When you are ready to turn those bits into a byte, press the Space Bar and the application will convert those bits into
+When you are ready to turn those bits into a byte, press the Space Bar, and the application will convert those bits into
 a byte and display it as a decimal.
 
-This application is currently designed to work in Linux. 
+This application is currently designed to work on Linux. 
 
 For the time-being, this app requires elevated privileges (e.g. `sudo`) to run.
 
@@ -39,6 +39,11 @@ sudo apt -y install build-essential cmake git libevdev-dev
 ```shell
 sudo pacman -S gcc cmake git libevdev
 ````
+
+#### Install Dependencies on Alpine
+```shell
+apk add --update build-base 'cmake>3.30' libevdev libevdev-dev gdb
+```
 
 ### Step 2: Clone this repository
 Run: 
@@ -80,5 +85,5 @@ maintaining this repository.
 ## License
 Copyright (C) 2025  Asami De Almeida
 
-Released under the Apache License 2.0 License. See the following pages for more information:
-* [Apache License 2.0](LICENSE)
+Released under the Apache Licence 2.0 Licence. See the following pages for more information:
+* [Apache Licence 2.0](LICENSE)

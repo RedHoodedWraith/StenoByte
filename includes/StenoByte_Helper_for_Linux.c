@@ -1,6 +1,10 @@
 /**
     StenoByte: a stenotype inspired keyboard app for typing out bytes.
 
+    StenoByte_Helper.c is the source file for implementing the Reading & Processing of Keyboard Events.
+
+    This file is intended to be modular and to be used when building for Linux Operating Systems.
+
     Copyright 2025 Asami De Almeida
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,36 +21,48 @@
  */
 
 #include "StenoByte_Helper.h"
+#include "StenoByte_Core.h"
 
+// Struct to store the evdev device
+struct libevdev *keyboard_device = nullptr;
 struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
+const int event_file_device;
 
-// Arrays & Variables
-// Bit Array that contains the bits that forms a byte
-bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
-char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
-u_int8_t subvalues_arr[BITS_ARR_SIZE];
-bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
-
-u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
 /*
- * Checks whether a valid key is pressed
+ * Sets up the application and configures the devices to read from
+ *
+ * Returns 0 if there were no errors, 1 if there were errors
  */
-bool is_valid_key(const int key_code) {
-    switch (key_code) {
-        case KEY_A:
-        case KEY_S:
-        case KEY_D:
-        case KEY_F:
-        case KEY_J:
-        case KEY_K:
-        case KEY_L:
-        case KEY_SEMICOLON:
-        case KEY_SPACE:
-            return true;
-        default:
-            return false;
+int setup_stenobyte() {
+    printf("Starting StenoType...\n");
+
+    setup_subvalues_array();
+
+    const int event_file_device = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to the correct device
+
+    // Opens the keyboard event file (usually event3) in Read-Only and Non-Blocking Modes
+    // Reports an error if something went wrong
+
+    if (event_file_device < 0) {
+        perror("Failed to open device");
+        return 1;
     }
+
+    // Disables printing inputs to the terminal
+    disable_echo();
+
+    // Initialises the evdev device (stored in libevdev struct named "keyboard_device")
+    // Reports an error if evdev initialisation failed
+    if (libevdev_new_from_fd(event_file_device, &keyboard_device) < 0) {
+        perror("Failed to init libevdev");
+        return 1;
+    }
+
+    // Prints evdev device name
+    printf("Input device name: %s\n", libevdev_get_name(keyboard_device));
+    printf("Press ESC to exit\n");
+    return 0;
 }
 
 /*
@@ -88,28 +104,75 @@ void update_bit_arr(const int key_code, const bool new_state) {
 }
 
 /*
- * Generates the Byte based on the bits in the array
+ * Runs the loop that constantly checks the keyboard events and performs the associated actions
  */
-void compute_byte() {
-    current_byte = 0x00;    // Resets the Byte to zero
-    for (int i = 0; i < BITS_ARR_SIZE; i++) {
-        current_byte = current_byte ^ bit_arr[i] << i;
+void run_stenobyte() {
+    struct input_event current_event;  // The current event struct
+
+    print_bit_arr_summary();    // Initial Print Summary
+
+    // Infinitely loops by default
+    while (1) {
+        // Gets the next event
+        const int next_event_result_code = libevdev_next_event(keyboard_device,
+            LIBEVDEV_READ_FLAG_NORMAL, &current_event);
+
+        // Ignores Non-Success Read Events
+        if (next_event_result_code != LIBEVDEV_READ_STATUS_SUCCESS) {
+            continue;
+        }
+
+        // Ensures a Key Event Type Occurred, ignores otherwise
+        if (current_event.type != EV_KEY) {
+            continue;
+        }
+
+        // If the ESC Key is pushed, then exit the app
+        if (current_event.code == KEY_ESC) {
+            printf("ESC pressed\nExiting...\n");
+            break;
+        }
+
+        process_key_presses(&current_event);
+        print_bit_arr_summary();
+
+        if (ready_to_compute_byte) {
+            compute_byte();
+        }
+
+        usleep(1000); // Small delay
     }
-    ready_to_compute_byte = false;
+}
+
+void end_stenobyte() {
+    // Frees up resources before application ends
+    libevdev_free(keyboard_device);
+    restore_terminal(); // Restores printing inputs to the terminal
+    close(event_file_device);
 }
 
 /*
- * Sets up the sub-values array for labelling
+ * Checks whether a valid key is pressed
  */
-void setup_subvalues_array() {
-    for (int i = BITS_ARR_SIZE; i >= 0; i--) {
-        u_int8_t val = 0;
-        subvalues_arr[i] = val ^ 1 << i;
+bool is_valid_key(const int key_code) {
+    switch (key_code) {
+        case KEY_A:
+        case KEY_S:
+        case KEY_D:
+        case KEY_F:
+        case KEY_J:
+        case KEY_K:
+        case KEY_L:
+        case KEY_SEMICOLON:
+        case KEY_SPACE:
+            return true;
+        default:
+            return false;
     }
 }
 
 /*
- * Prints the event summary of a key press *
+ * Prints the event summary of a key press. Used for debugging.
  */
 void print_event_summary(const struct input_event* current_event) {
     if (current_event == NULL) {
@@ -126,47 +189,6 @@ void print_event_summary(const struct input_event* current_event) {
            current_event->code);    // Prints the ID for the key that is affected
 }
 
-void print_byte_summary() {
-    printf("Last Computed Byte as decimal: %d\n", current_byte);
-}
-
-/*
- * Prints the current state of the Bit Array
- * TODO: The repeated for loops could probably be simplified into a dedicated method
- */
-void print_bit_arr_summary() {
-    printf("\nBits in Array:\n");
-    printf("\tBit Value:\t| ");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t%d\t|", bit_arr[i]);
-    }
-    printf("\n");
-
-    for (int i=0; i<24+16*BITS_ARR_SIZE; i++) {
-        printf("-");
-    }
-
-    printf("\n\tSub-Value:\t|");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[%d]\t|", subvalues_arr[i]);
-    }
-
-    printf("\n\tBit Index:\t|");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[b%d]\t|", i);
-    }
-    printf("\n\tKey:\t\t|");
-
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[%c]\t|", keys_arr[i]);
-    }
-    printf("\n");
-    print_byte_summary();
-    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");
-    printf("\nBits will be 0 if keys are not pressed.");
-    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");
-}
-
 /*
  * Processes the key events, such as key presses, key releases, and key repeats (when the key is held down)
  */
@@ -176,7 +198,7 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Exits method if event type is not related to a key event
+    // Exits method if the event_type variable is not related to a key event
     if (current_event->type != EV_KEY) {
         return;
     }
@@ -186,8 +208,8 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Sets the bit value in array to zero if the associated key is released
-    // Then exits method
+    // Sets the bit value in the array to zero if the associated key is released
+    // Then exits the method
     if (current_event->value == EV_KEY_RELEASED) {
         update_bit_arr(current_event->code, false);
         return;
@@ -214,7 +236,7 @@ void disable_echo() {
 }
 
 /*
- * Restores original terminal settings prior to this program running
+ * Restores original terminal settings before this program running
  */
 void restore_terminal() {
     tcsetattr(STDIN_FILENO, TCSANOW, &original_terminal_settings); // restore settings
