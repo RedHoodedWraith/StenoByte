@@ -80,6 +80,5 @@ maintaining this repository.
 ## License
 Copyright (C) 2025  Asami De Almeida
 
-Released under the GPL 3 License. See the following pages for more information:
-* [License Summary](LICENSE_SUMMARY.md)
-* [Full GPL 3 License](LICENSE)
+Released under the Apache License 2.0 License. See the following pages for more information:
+* [Apache License 2.0](LICENSE)
