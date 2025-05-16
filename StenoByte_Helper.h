@@ -25,6 +25,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // Key Press States
 #define EV_KEY_RELEASED 0
