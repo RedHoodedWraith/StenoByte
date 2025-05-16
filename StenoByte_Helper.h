@@ -49,6 +49,12 @@ extern u_int8_t current_byte;  // The byte last computed from the bit array
 
 // Methods & Functions
 
+void setup_stenobyte();
+
+void run_stenobyte();
+
+void end_stenobyte();
+
 bool is_valid_key(int key_code);
 
 void update_bit_arr(int key_code, bool new_state);
