@@ -51,7 +51,7 @@ void compute_byte() {
  */
 void setup_subvalues_array() {
     for (int i = BITS_ARR_SIZE; i >= 0; i--) {
-        constexpr u_int8_t val = 0;
+        const u_int8_t val = 0;
         subvalues_arr[i] = val ^ 1 << i;
     }
 }
