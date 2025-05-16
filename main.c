@@ -16,7 +16,7 @@
    limitations under the License.
  */
 
-#include "StenoByte_Helper.h"
+#include "StenoByte_Core.h"
 
 
 int main() {
