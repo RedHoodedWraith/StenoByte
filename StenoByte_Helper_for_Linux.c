@@ -1,6 +1,10 @@
 /**
     StenoByte: a stenotype inspired keyboard app for typing out bytes.
 
+    StenoByte_Helper.c is the source file for implementing the Reading & Processing of Keyboard Events.
+
+    This file is intended to be modular and to be used when building for Linux Operating Systems.
+
     Copyright 2025 Asami De Almeida
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +21,13 @@
  */
 
 #include "StenoByte_Helper.h"
+#include "StenoByte_Core.h"
 
 // Struct to store the evdev device
 struct libevdev *keyboard_device = nullptr;
 struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
 const int event_file_device;
 
-// Arrays & Variables
-// Bit Array that contains the bits that forms a byte
-bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7 during initialisation
-char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
-u_int8_t subvalues_arr[BITS_ARR_SIZE];
-bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
-
-u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
 /*
  * Sets up the application and configures the devices to read from
@@ -66,6 +63,44 @@ int setup_stenobyte() {
     printf("Input device name: %s\n", libevdev_get_name(keyboard_device));
     printf("Press ESC to exit\n");
     return 0;
+}
+
+/*
+ * Updates the current bits in the array and whether the array is ready to be computed into a byte (which is when
+ * the space bar is pressed)
+ */
+void update_bit_arr(const int key_code, const bool new_state) {
+    switch (key_code) {
+        case KEY_A:
+            bit_arr[7] = new_state;
+            return;
+        case KEY_S:
+            bit_arr[6] = new_state;
+            return;
+        case KEY_D:
+            bit_arr[5] = new_state;
+            return;
+        case KEY_F:
+            bit_arr[4] = new_state;
+            return;
+        case KEY_J:
+            bit_arr[3] = new_state;
+            return;
+        case KEY_K:
+            bit_arr[2] = new_state;
+            return;
+        case KEY_L:
+            bit_arr[1] = new_state;
+            return;
+        case KEY_SEMICOLON:
+            bit_arr[0] = new_state;
+            return;
+        case KEY_SPACE:
+            // sets ready_to_compute_byte to true if new_state is true, else leaves it as it is
+            // ready_to_compute_byte should to be set to false after it computing the byte
+            ready_to_compute_byte = new_state ? true : ready_to_compute_byte;
+        default: ;
+    }
 }
 
 /*
@@ -137,65 +172,6 @@ bool is_valid_key(const int key_code) {
 }
 
 /*
- * Updates the current bits in the array and whether the array is ready to be computed into a byte (which is when
- * the space bar is pressed)
- */
-void update_bit_arr(const int key_code, const bool new_state) {
-    switch (key_code) {
-        case KEY_A:
-            bit_arr[7] = new_state;
-            return;
-        case KEY_S:
-            bit_arr[6] = new_state;
-            return;
-        case KEY_D:
-            bit_arr[5] = new_state;
-            return;
-        case KEY_F:
-            bit_arr[4] = new_state;
-            return;
-        case KEY_J:
-            bit_arr[3] = new_state;
-            return;
-        case KEY_K:
-            bit_arr[2] = new_state;
-            return;
-        case KEY_L:
-            bit_arr[1] = new_state;
-            return;
-        case KEY_SEMICOLON:
-            bit_arr[0] = new_state;
-            return;
-        case KEY_SPACE:
-            // sets ready_to_compute_byte to true if new_state is true, else leaves it as it is
-            // ready_to_compute_byte should to be set to false after it computing the byte
-            ready_to_compute_byte = new_state ? true : ready_to_compute_byte;
-        default: ;
-    }
-}
-
-/*
- * Generates the Byte based on the bits in the array
- */
-void compute_byte() {
-    current_byte = 0x00;    // Resets the Byte to zero
-    for (int i = 0; i < BITS_ARR_SIZE; i++) {
-        current_byte = current_byte ^ bit_arr[i] << i;
-    }
-    ready_to_compute_byte = false;
-}
-
-/*
- * Sets up the sub-values array for labelling
- */
-void setup_subvalues_array() {
-    for (int i = BITS_ARR_SIZE; i >= 0; i--) {
-        constexpr u_int8_t val = 0;
-        subvalues_arr[i] = val ^ 1 << i;
-    }
-}
-
-/*
  * Prints the event summary of a key press. Used for debugging.
  */
 void print_event_summary(const struct input_event* current_event) {
@@ -211,66 +187,6 @@ void print_event_summary(const struct input_event* current_event) {
            current_event->value ? (current_event->value == EV_KEY_PRESSED ? "PRESSED" : "REPEATED") : "RELEASED",
            current_event->value,    // Prints what happened in the event
            current_event->code);    // Prints the ID for the key that is affected
-}
-
-/*
- * Prints the Byte Summary
- */
-void print_byte_summary() {
-    char msg[35];
-    get_byte_summary(msg);
-    printf("%s", msg);
-}
-
-/*
- * Gets Byte Summary as a String (an array of chars)
- * Assumes msg has a minimum length of 35. Assumes value of current_byte will not exceed 255.
- */
-void get_byte_summary(char* msg) {
-    sprintf(msg + strlen(msg), "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
-}
-
-/*
- * Prints the current state of the Bit Array
- * TODO: The repeated for loops could probably be simplified into a dedicated method
- */
-void print_bit_arr_summary() {
-    char msg[654] = "";
-
-    sprintf(msg + strlen(msg), "\nBits in Array:\n");   // Prints 16 chars
-    sprintf(msg + strlen(msg), "\tBit Value:\t| "); // Prints 14 chars
-    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        sprintf(msg + strlen(msg), "\t%d\t|", bit_arr[i]);  // Prints between 4 and 6 chars
-    }
-    sprintf(msg + strlen(msg), "\n");   // Prints 1 char
-
-    for (int i=0; i<24+16*BITS_ARR_SIZE; i++) { // Repeats 24+(16*8) times, which is 152
-        sprintf(msg + strlen(msg), "-");    // Prints 1 char
-    }
-
-    sprintf(msg + strlen(msg), "\n\tSub-Value:\t|");    // Prints 14 chars
-    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        sprintf(msg + strlen(msg), "\t[%d]\t|", subvalues_arr[i]);  // Prints between 6 and 8 chars
-    }
-
-    sprintf(msg + strlen(msg), "\n\tBit Index:\t|");    // Prints 14 chars
-    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        sprintf(msg + strlen(msg), "\t[b%d]\t|", i);    // Prints 7 chars
-    }
-    sprintf(msg + strlen(msg), "\n\tKey:\t\t|");    // Prints 9 times
-
-    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
-        sprintf(msg + strlen(msg), "\t[%c]\t|", keys_arr[i]);   // Prints 6 chars
-    }
-    sprintf(msg + strlen(msg), "\n");   // Prints 1 char
-    get_byte_summary(msg);   // Prints between 33 and 35 chars
-    sprintf(msg + strlen(msg), "\nPress & Hold the keys corresponding to the bits in the"
-                               " byte you would like to set to 1.");    // Prints 88 chars
-    sprintf(msg + strlen(msg), "\nBits will be 0 if keys are not pressed.");    // Prints 40 chars
-    sprintf(msg + strlen(msg), "\nPress SPACE BAR to compute Byte\t\t|\t"
-                               "Press ESC to exit\n");  // Prints 53 chars
-
-    printf("%s", msg);
 }
 
 /*

@@ -1,6 +1,11 @@
 /**
     StenoByte: a stenotype inspired keyboard app for typing out bytes.
 
+    StenoByte_Helper.h is the header file for defining resources for Keyboard Event Reading for a range of
+    Operating Systems.
+
+    TODO: Implement conditional declarations that will be dependent on the target OS.
+
 	Copyright 2025 Asami De Almeida
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,51 +38,29 @@
 #define EV_KEY_PRESSED 1
 #define EV_KEY_REPEATED 2
 
-// Number of Bits in the Bit Array (should be 8)
-# define BITS_ARR_SIZE 8
-
+// Externally Declared Structs and Variables (expected to be declared and implemented in dependencies)
 extern struct libevdev *keyboard_device; // Struct to store the evdev device
 extern struct termios original_terminal_settings;    // Termios Struct to store original terminal settings
 extern const int event_file_device;
 
-// Arrays & Variables
-// Bit Array that contains the bits that forms a byte
-extern bool bit_arr[BITS_ARR_SIZE]; // ordered from b0 to b7 during initialisation
-extern char keys_arr[BITS_ARR_SIZE]; // ';' = b0, 'L' = b1, ... 'A' = b7
-extern u_int8_t subvalues_arr[BITS_ARR_SIZE];
-extern bool ready_to_compute_byte;  // the state for whether to convert the bit array into a byte and process it
 
-extern u_int8_t current_byte;  // The byte last computed from the bit array
+// Externally Declared Methods & Functions
+// (expected to be declared & defined in dependent libraries or in StenoByte_Core files)
+extern void setup_subvalues_array();    // StenoByte_Core.h/c
+extern void compute_byte();
+extern void print_bit_arr_summary();
+extern void update_bit_arr(int key_code, bool new_state);
 
 
 // Methods & Functions
-
 int setup_stenobyte();
-
-void run_stenobyte();
-
-void end_stenobyte();
-
-void process_key_presses(const struct input_event* current_event);
-
-bool is_valid_key(int key_code);
-
 void update_bit_arr(int key_code, bool new_state);
-
-void compute_byte();
-
-void setup_subvalues_array();
-
-void get_byte_summary(char* msg);
-
+void run_stenobyte();
+void end_stenobyte();
+void process_key_presses(const struct input_event* current_event);
+bool is_valid_key(int key_code);
 void print_event_summary(const struct input_event* current_event);
-
-void print_byte_summary();
-
-void print_bit_arr_summary();
-
 void disable_echo();
-
 void restore_terminal();
 
 #endif //STENOBYTE_HELPER_H
