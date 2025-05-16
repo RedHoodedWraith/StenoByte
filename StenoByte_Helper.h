@@ -65,6 +65,8 @@ void compute_byte();
 
 void setup_subvalues_array();
 
+const char* get_byte_summary();
+
 void print_event_summary(const struct input_event* current_event);
 
 void print_byte_summary();

@@ -196,7 +196,7 @@ void setup_subvalues_array() {
 }
 
 /*
- * Prints the event summary of a key press *
+ * Prints the event summary of a key press. Used for debugging.
  */
 void print_event_summary(const struct input_event* current_event) {
     if (current_event == NULL) {
@@ -214,7 +214,18 @@ void print_event_summary(const struct input_event* current_event) {
 }
 
 void print_byte_summary() {
-    printf("Last Computed Byte as decimal: %d\n", current_byte);
+    // printf("Last Computed Byte as decimal: %d\n", current_byte);
+    printf("%s", get_byte_summary());
+}
+
+/*
+ * Gets Byte Summary as a String (an array of chars)
+ * Prints between 33 and 35 chars but assumes current_byte will not be a value that exceeds 255.
+ */
+const char* get_byte_summary() {
+    char* msg[35];
+    sprintf(*msg, "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
+    return *msg;
 }
 
 /*
@@ -222,36 +233,36 @@ void print_byte_summary() {
  * TODO: The repeated for loops could probably be simplified into a dedicated method
  */
 void print_bit_arr_summary() {
-    printf("\nBits in Array:\n");
-    printf("\tBit Value:\t| ");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t%d\t|", bit_arr[i]);
+    printf("\nBits in Array:\n");   // Prints 16 chars
+    printf("\tBit Value:\t| "); // Prints 14 chars
+    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
+        printf("\t%d\t|", bit_arr[i]);  // Prints between 4 and 6 chars
     }
-    printf("\n");
+    printf("\n");   // Prints 1 char
 
-    for (int i=0; i<24+16*BITS_ARR_SIZE; i++) {
-        printf("-");
-    }
-
-    printf("\n\tSub-Value:\t|");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[%d]\t|", subvalues_arr[i]);
+    for (int i=0; i<24+16*BITS_ARR_SIZE; i++) { // Repeats 24+(16*8) times, which is 152
+        printf("-");    // Prints 1 char
     }
 
-    printf("\n\tBit Index:\t|");
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[b%d]\t|", i);
+    printf("\n\tSub-Value:\t|");    // Prints 14 chars
+    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
+        printf("\t[%d]\t|", subvalues_arr[i]);  // Prints between 6 and 8 chars
     }
-    printf("\n\tKey:\t\t|");
 
-    for (int i = 7; i >= 0; i--) {
-        printf("\t[%c]\t|", keys_arr[i]);
+    printf("\n\tBit Index:\t|");    // Prints 14 chars
+    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
+        printf("\t[b%d]\t|", i);    // Prints 7 times
     }
-    printf("\n");
-    print_byte_summary();
-    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");
-    printf("\nBits will be 0 if keys are not pressed.");
-    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");
+    printf("\n\tKey:\t\t|");    // Prints 9 times
+
+    for (int i = 7; i >= 0; i--) {  // Repeats 8 times
+        printf("\t[%c]\t|", keys_arr[i]);   // Prints 6 char
+    }
+    printf("\n");   // Prints 1 char
+    print_byte_summary();   // Prints between 33 and 35 chars
+    printf("\nPress & Hold the keys corresponding to the bits in the byte you would like to set to 1.");    // Prints 88 chars
+    printf("\nBits will be 0 if keys are not pressed.");    // Prints 40 chars
+    printf("\nPress SPACE BAR to compute Byte\t\t|\tPress ESC to exit\n");  // Prints 53 chars
 }
 
 /*

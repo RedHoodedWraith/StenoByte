@@ -20,7 +20,7 @@
 
 
 int main() {
-    int setup_result = setup_stenobyte();
+    const int setup_result = setup_stenobyte();
     if (setup_result != 0) {
         return setup_result;
     }
