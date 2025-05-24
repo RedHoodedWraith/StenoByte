@@ -62,6 +62,7 @@ void setup_subvalues_array() {
  */
 void get_byte_summary(char* msg) {
     sprintf(msg + strlen(msg), "Last Computed Byte as decimal: %d\n", current_byte);  // Prints between 33 and 35 chars
+    sprintf(msg + strlen(msg), R"(Last Computed Byte as Raw Value: %c)", (char) current_byte);
 }
 
 /*
