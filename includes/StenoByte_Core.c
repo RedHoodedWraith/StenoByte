@@ -29,11 +29,34 @@ bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7
 char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
 u_int8_t subvalues_arr[BITS_ARR_SIZE];
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
+const char* output_file_path;  // The path to the file write to
+FILE *output_file_ptr;  // The pointer of the file itself to write to
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
 
 // Methods & Functions
+
+int setup_stenobyte_demo() {
+    printf("Starting StenoType...\n");
+    return setup_stenobyte();
+}
+
+int setup_stenobyte_writer(int argc, const char* argv[]) {
+    if (argc < 2) {
+        // Default File Path if none is provided
+        output_file_path = "./output.txt";
+    } else {
+        // File Path Provided by Command Line Arguments
+        output_file_path = argv[1];
+    }
+
+    printf("Welcome to StenoByte Writer.\nWriting to file: %s\n", output_file_path);
+
+    output_file_ptr = fopen(output_file_path, "w");
+
+    return setup_stenobyte();
+}
 
 /*
  * Generates the Byte based on the bits in the array
@@ -115,4 +138,12 @@ void print_bit_arr_summary() {
                                "Press ESC to exit\n");  // Prints 53 chars
 
     printf("%s", msg);
+}
+
+/*
+ * Closes the File and frees up memory safely
+ */
+void end_stenobyte_writer() {
+    fclose(output_file_ptr);
+    end_stenobyte();
 }

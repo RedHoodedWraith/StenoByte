@@ -34,6 +34,8 @@ extern char keys_arr[BITS_ARR_SIZE]; // ';' = b0, 'L' = b1, ... 'A' = b7
 extern u_int8_t subvalues_arr[BITS_ARR_SIZE];
 extern bool ready_to_compute_byte;  // the state for whether to convert the bit array into a byte and process it
 extern u_int8_t current_byte;  // The byte last computed from the bit array
+extern const char* output_file_path;  // The path to the file write to
+extern FILE *output_file_ptr;  // The pointer of the file itself to write to
 
 
 // Externally Declared Methods & Functions (expected to be declared & defined StenoByte_Helper files)
@@ -43,10 +45,13 @@ extern void run_stenobyte();
 extern void end_stenobyte();
 
 // Methods & Functions
+int setup_stenobyte_demo();
+int setup_stenobyte_writer(int argc, const char* argv[]);
 void compute_byte();
 void setup_subvalues_array();
 void get_byte_summary(char* msg);
 void print_byte_summary();
 void print_bit_arr_summary();
+void end_stenobyte_writer();
 
 #endif //STENOBYTE_CORE_H

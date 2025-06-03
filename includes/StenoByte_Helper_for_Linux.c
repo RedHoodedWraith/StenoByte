@@ -35,8 +35,6 @@ const int event_file_device;
  * Returns 0 if there were no errors, 1 if there were errors
  */
 int setup_stenobyte() {
-    printf("Starting StenoType...\n");
-
     setup_subvalues_array();
 
     const int event_file_device = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to the correct device
@@ -135,6 +133,7 @@ void run_stenobyte() {
 
         process_key_presses(&current_event);
         print_bit_arr_summary();
+        // TODO: Handle if in writer mode and to write to file if it is
 
         if (ready_to_compute_byte) {
             compute_byte();

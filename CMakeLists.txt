@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 project(StenoByte_Prototype C)
+project(StenoByte_Writer C)
 
 set(CMAKE_C_STANDARD 23)
 
@@ -38,6 +39,11 @@ else ()
 endif ()
 
 # Main App
-add_executable(StenoByte_Prototype main.c)
+add_executable(StenoByte_Prototype src/stenobyte_demo.c)
 target_include_directories(StenoByte_Prototype PRIVATE ${LIBEVDEV_INCLUDE_DIRS} StenoByte_Library)
 target_link_libraries(StenoByte_Prototype PRIVATE ${LIBEVDEV_LIBRARIES} StenoByte_Library)
+
+# Writer App
+add_executable(StenoByte_Writer src/stenobyte_writer.c)
+target_include_directories(StenoByte_Writer PRIVATE ${LIBEVDEV_INCLUDE_DIRS} StenoByte_Library)
+target_link_libraries(StenoByte_Writer PRIVATE ${LIBEVDEV_LIBRARIES} StenoByte_Library)
