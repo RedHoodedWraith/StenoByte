@@ -24,6 +24,12 @@
 
 #include "StenoByte_Helper.h"
 
+enum stenobyte_mode {
+    NOT_SET = 0,
+    DEMO,
+    WRITER
+};
+
 // Number of Bits in the Bit Array (should be 8)
 # define BITS_ARR_SIZE 8
 
@@ -36,6 +42,8 @@ extern bool ready_to_compute_byte;  // the state for whether to convert the bit 
 extern u_int8_t current_byte;  // The byte last computed from the bit array
 extern const char* output_file_path;  // The path to the file write to
 extern FILE *output_file_ptr;  // The pointer of the file itself to write to
+extern enum stenobyte_mode mode;  // What mode is the program currently in
+
 
 
 // Externally Declared Methods & Functions (expected to be declared & defined StenoByte_Helper files)
@@ -47,11 +55,14 @@ extern void end_stenobyte();
 // Methods & Functions
 int setup_stenobyte_demo();
 int setup_stenobyte_writer(int argc, const char* argv[]);
+void action();
 void compute_byte();
 void setup_subvalues_array();
 void get_byte_summary(char* msg);
 void print_byte_summary();
+void print_current_mode(char* msg);
 void print_bit_arr_summary();
+void write_byte_to_file();
 void end_stenobyte_writer();
 
 #endif //STENOBYTE_CORE_H

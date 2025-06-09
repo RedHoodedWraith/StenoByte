@@ -132,8 +132,7 @@ void run_stenobyte() {
         }
 
         process_key_presses(&current_event);
-        print_bit_arr_summary();
-        // TODO: Handle if in writer mode and to write to file if it is
+        action();
 
         if (ready_to_compute_byte) {
             compute_byte();

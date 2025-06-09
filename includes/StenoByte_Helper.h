@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Key Press States
 #define EV_KEY_RELEASED 0
@@ -47,6 +48,7 @@ extern const int event_file_device;
 // Externally Declared Methods & Functions
 // (expected to be declared & defined in dependent libraries or in StenoByte_Core files)
 extern void setup_subvalues_array();    // StenoByte_Core.h/c
+extern void action();   // Run the core action in the loop
 extern void compute_byte();
 extern void print_bit_arr_summary();
 extern void update_bit_arr(int key_code, bool new_state);
