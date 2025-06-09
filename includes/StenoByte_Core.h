@@ -55,7 +55,6 @@ extern void end_stenobyte();
 // Methods & Functions
 int setup_stenobyte_demo();
 int setup_stenobyte_writer(int argc, const char* argv[]);
-void action();
 void compute_byte();
 void setup_subvalues_array();
 void get_byte_summary(char* msg);

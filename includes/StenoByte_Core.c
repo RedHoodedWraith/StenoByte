@@ -59,22 +59,6 @@ int setup_stenobyte_writer(int argc, const char* argv[]) {
     return setup_stenobyte();
 }
 
-void action() {
-    // TODO: this could probably be done once during setup by setting a pointer to the function to run as the action
-    switch (mode) {
-        case DEMO:
-            print_bit_arr_summary();
-            break;
-        case WRITER:
-            print_bit_arr_summary();
-            write_byte_to_file();
-            break;
-        default:
-            perror("No StenoByte Mode Set");
-            exit(EXIT_FAILURE);
-    }
-}
-
 /*
  * Generates the Byte based on the bits in the array
  */
@@ -182,7 +166,7 @@ void print_bit_arr_summary() {
 }
 
 void write_byte_to_file() {
-    printf("This is where the writing will happen...\n");
+    fprintf(output_file_ptr, "%c", (char) current_byte);
 }
 
 /*

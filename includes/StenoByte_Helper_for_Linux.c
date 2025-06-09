@@ -132,10 +132,13 @@ void run_stenobyte() {
         }
 
         process_key_presses(&current_event);
-        action();
+        print_bit_arr_summary();
 
         if (ready_to_compute_byte) {
             compute_byte();
+            if (mode == WRITER) {
+                write_byte_to_file();
+            }
         }
 
         usleep(1000); // Small delay
@@ -213,7 +216,7 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Exits method if key even is not a key press or key repeat
+    // Exits method if key event is not a key press or key repeat
     if (current_event->value != EV_KEY_PRESSED && current_event->value != EV_KEY_REPEATED) {
         return;
     }
