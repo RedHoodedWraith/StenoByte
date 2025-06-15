@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 // Key Press States
 #define EV_KEY_RELEASED 0

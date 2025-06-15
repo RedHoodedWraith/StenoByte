@@ -35,8 +35,6 @@ const int event_file_device;
  * Returns 0 if there were no errors, 1 if there were errors
  */
 int setup_stenobyte() {
-    printf("Starting StenoType...\n");
-
     setup_subvalues_array();
 
     const int event_file_device = open("/dev/input/event3", O_RDONLY | O_NONBLOCK); // Change to the correct device
@@ -138,6 +136,9 @@ void run_stenobyte() {
 
         if (ready_to_compute_byte) {
             compute_byte();
+            if (mode == WRITER) {
+                write_byte_to_file();
+            }
         }
 
         usleep(1000); // Small delay
@@ -215,7 +216,7 @@ void process_key_presses(const struct input_event* current_event) {
         return;
     }
 
-    // Exits method if key even is not a key press or key repeat
+    // Exits method if key event is not a key press or key repeat
     if (current_event->value != EV_KEY_PRESSED && current_event->value != EV_KEY_REPEATED) {
         return;
     }

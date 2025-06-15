@@ -1,7 +1,7 @@
 /**
-    StenoByte: a stenotype inspired keyboard app for typing out bytes.
+StenoByte: a stenotype inspired keyboard app for typing out bytes.
 
-	Copyright 2025 Asami De Almeida
+    Copyright 2025 Asami De Almeida
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
    limitations under the License.
  */
 
-#include "includes/StenoByte_Core.h"
+#include "../includes/StenoByte_Core.h"
 
 
-int main() {
+int main(int argc, const char* argv[]) {
+
+    // fprintf(output_file_ptr, "Some Text 123!\n");
+
     // Performs setup; exits app if there was an error while setting up
-    const int setup_result = setup_stenobyte();
+    const int setup_result = setup_stenobyte_writer(argc, argv);
     if (setup_result != 0) {
         return setup_result;
     }
@@ -29,7 +32,8 @@ int main() {
     // Runs the loop
     run_stenobyte();
 
-    // Frees up Memory Safely
-    end_stenobyte();
+    // Frees up Memory Safely & Closes the File
+    end_stenobyte_writer();
+
     return 0;
 }

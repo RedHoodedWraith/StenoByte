@@ -29,11 +29,35 @@ bool bit_arr[BITS_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0}; // ordered from b0 to b7
 char keys_arr[BITS_ARR_SIZE] = {';', 'L', 'K', 'J', 'F', 'D', 'S', 'A'}; // ';' = b0, 'L' = b1, ... 'A' = b7
 u_int8_t subvalues_arr[BITS_ARR_SIZE];
 bool ready_to_compute_byte = false;  // the state for whether to convert the bit array into a byte and process it
+const char* output_file_path;  // The path to the file write to
+FILE *output_file_ptr;  // The pointer of the file itself to write to
+enum stenobyte_mode mode = NOT_SET;
 
 u_int8_t current_byte = 0x00;  // The byte last computed from the bit array
 
 
 // Methods & Functions
+
+int setup_stenobyte_demo() {
+    printf("Starting StenoType...\n");
+    mode = DEMO;
+    return setup_stenobyte();
+}
+
+int setup_stenobyte_writer(int argc, const char* argv[]) {
+    if (argc < 2) {
+        // Default File Path if none is provided
+        output_file_path = "./output.txt";
+    } else {
+        // File Path Provided by Command Line Arguments
+        output_file_path = argv[1];
+    }
+
+    printf("Welcome to StenoByte Writer.\nWriting to file: %s\n", output_file_path);
+    output_file_ptr = fopen(output_file_path, "w");
+    mode = WRITER;
+    return setup_stenobyte();
+}
 
 /*
  * Generates the Byte based on the bits in the array
@@ -74,13 +98,37 @@ void print_byte_summary() {
     printf("%s", msg);
 }
 
+void print_current_mode(char* msg) {
+    // Min Chars Printed: 11
+    // Max Chars Printed: 19
+    sprintf(msg+strlen(msg), "Mode: "); // Prints 6 chars
+
+    switch (mode) {
+        case DEMO:
+            sprintf(msg+strlen(msg), "DEMO");   // Prints 4 chars
+            break;
+        case WRITER:
+            sprintf(msg+strlen(msg), "WRITER"); // Prints 6 chars
+            break;
+        case NOT_SET:
+            sprintf(msg+strlen(msg), "NOT_SET");    // Prints 7 chars
+            break;
+        default:
+            sprintf(msg+strlen(msg), "UNKNOWN MODE");   // Prints 12 chars
+            break;
+    }
+
+    sprintf(msg+strlen(msg), "\n"); // Prints 1 char
+}
+
 /*
  * Prints the current state of the Bit Array
  * TODO: The repeated for loops could probably be simplified into a dedicated method
  */
 void print_bit_arr_summary() {
-    char msg[654] = "";
+    char msg[673] = "";
 
+    print_current_mode(msg);    // Prints between 11 and 19 chars
     sprintf(msg + strlen(msg), "\nBits in Array:\n");   // Prints 16 chars
     sprintf(msg + strlen(msg), "\tBit Value:\t| "); // Prints 14 chars
     for (int i = 7; i >= 0; i--) {  // Repeats 8 times
@@ -115,4 +163,16 @@ void print_bit_arr_summary() {
                                "Press ESC to exit\n");  // Prints 53 chars
 
     printf("%s", msg);
+}
+
+void write_byte_to_file() {
+    fprintf(output_file_ptr, "%c", (char) current_byte);
+}
+
+/*
+ * Closes the File and frees up memory safely
+ */
+void end_stenobyte_writer() {
+    fclose(output_file_ptr);
+    end_stenobyte();
 }
