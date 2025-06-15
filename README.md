@@ -66,9 +66,14 @@ make
 ```
 
 ### Step 4: Run the program/application
-If `make` runs successfully, then run:
+If `make` runs successfully, then run the following for a simple demonstration:
 ```shell
 sudo ./StenoByte_Prototype
+```
+
+Alternatively if you would like to write your bytes to a file, the run the following:
+```shell
+sudo ./StenoByte_Writer
 ```
 
 To exit the app, press the `Esc` key on your keyboard.
